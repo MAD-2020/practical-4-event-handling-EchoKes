@@ -9,88 +9,117 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.Random;
 
 public class Main2Activity extends AppCompatActivity {
-    /* Hint
-        - The function setNewMole() uses the Random class to generate a random value ranged from 0 to 8.
-        - The function doCheck() takes in button selected and computes a hit or miss and adjust the score accordingly.
-        - The functions readTimer() and placeMoleTimer() are to inform the user X seconds before starting and loading new mole.
-        - Feel free to modify the function to suit your program.
-    */
-
-
+    TextView Score;
+    int Count;
+    Button B1; Button B2; Button B3; Button B4; Button B5; Button B6; Button B7; Button B8; Button B9;
+    Button[] advBList;
+    long millisUntilFinished;
+    long interval;
+    CountDownTimer myCountDown;
+    CountDownTimer MoleCountDown;
 
     private void readyTimer(){
-        /*  HINT:
-            The "Get Ready" Timer.
-            Log.v(TAG, "Ready CountDown!" + millisUntilFinished/ 1000);
-            Toast message -"Get Ready In X seconds"
-            Log.v(TAG, "Ready CountDown Complete!");
-            Toast message - "GO!"
-            belongs here.
-            This timer countdown from 10 seconds to 0 seconds and stops after "GO!" is shown.
-         */
+        millisUntilFinished = 5000;
+        interval = 1000;
+        myCountDown = new CountDownTimer(millisUntilFinished, interval) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Toast.makeText(Main2Activity.this,"Get Ready In " + millisUntilFinished/interval, Toast.LENGTH_SHORT).show();
+                Log.d("#d", "Ready CountDown!" + millisUntilFinished/interval);
+                //Score.setText("" + (millisUntilFinished/interval));
+            }
+
+            @Override
+            public void onFinish() {
+                Toast.makeText(Main2Activity.this,"GO!", Toast.LENGTH_SHORT).show();
+                Log.d("#d","Ready Countdown Complete!");
+                placeMoleTimer();
+            }
+        };
+        myCountDown.start();
     }
     private void placeMoleTimer(){
-        /* HINT:
-           Creates new mole location each second.
-           Log.v(TAG, "New Mole Location!");
-           setNewMole();
-           belongs here.
-           This is an infinite countdown timer.
-         */
+        MoleCountDown = new CountDownTimer(1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                setNewMole();
+                Log.d("#d", "New Mole Location!");
+            }
+
+            @Override
+            public void onFinish() {
+                MoleCountDown.start();
+            }
+        };
+        MoleCountDown.start();
     }
-    private static final int[] BUTTON_IDS = {
-        /* HINT:
-            Stores the 9 buttons IDs here for those who wishes to use array to create all 9 buttons.
-            You may use if you wish to change or remove to suit your codes.*/
-    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        /*Hint:
-            This starts the countdown timers one at a time and prepares the user.
-            This also prepares the existing score brought over.
-            It also prepares the button listeners to each button.
-            You may wish to use the for loop to populate all 9 buttons with listeners.
-         */
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        Score = findViewById(R.id.score);
+        B1 = findViewById(R.id.b1);
+        B2 = findViewById(R.id.b2);
+        B3 = findViewById(R.id.b3);
+        B4 = findViewById(R.id.b4);
+        B5 = findViewById(R.id.b5);
+        B6 = findViewById(R.id.b6);
+        B7 = findViewById(R.id.b7);
+        B8 = findViewById(R.id.b8);
+        B9 = findViewById(R.id.b9);
 
-        Log.v(TAG, "Current User Score: " + String.valueOf(advancedScore));
-
-
-        for(final int id : BUTTON_IDS){
-            /*  HINT:
-            This creates a for loop to populate all 9 buttons with listeners.
-            You may use if you wish to remove or change to suit your codes.
-            */
-        }
+        //Get the score from basic mode
+        Intent receivingEnd = getIntent();
+        Count = receivingEnd.getIntExtra("Count", 0);
+        Log.d("#d", "Current User Score: " + Count);
     }
+
     @Override
     protected void onStart(){
         super.onStart();
+        advBList = new Button[]{B1,B2,B3,B4,B5,B6,B7,B8,B9};
+        Score.setText("" + (Count));
+        readyTimer();
+        for (final Button b : advBList) {
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    doCheck(b);
+                }
+            });
+        }
     }
-    private void doCheck(Button checkButton)
+
+    private void doCheck(Button b)
     {
-        /* Hint:
-            Checks for hit or miss
-            Log.v(TAG, "Hit, score added!");
-            Log.v(TAG, "Missed, point deducted!");
-            belongs here.
-        */
+        if (b.getText() == "*"){
+            Score.setText("" + (Count+=1));
+            Log.v("#d", "Hit, score added!");
+        }
+        else {
+            Score.setText("" + (Count-=1));
+            Log.v("#d", "Missed, point deducted!");
+        }
     }
 
     public void setNewMole()
     {
-        /* Hint:
-            Clears the previous mole location and gets a new random location of the next mole location.
-            Sets the new location of the mole.
-         */
         Random ran = new Random();
         int randomLocation = ran.nextInt(9);
+        for (int i = 0; i<advBList.length; i++){
+            if(randomLocation==i){
+                advBList[i].setText("*");
+            }
+            else{
+                advBList[i].setText("O");
+            }
+        }
     }
 }
 

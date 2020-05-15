@@ -9,69 +9,131 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-
-    /* Hint
-        - The function setNewMole() uses the Random class to generate a random value ranged from 0 to 2.
-        - The function doCheck() takes in button selected and computes a hit or miss and adjust the score accordingly.
-        - The function doCheck() also decides if the user qualifies for the advance level and triggers for a dialog box to ask for user to decide.
-        - The function nextLevelQuery() builds the dialog box and shows. It also triggers the nextLevel() if user selects Yes or return to normal state if user select No.
-        - The function nextLevel() launches the new advanced page.
-        - Feel free to modify the function to suit your program.
-    */
+    Button B1;
+    Button B2;
+    Button B3;
+    TextView Score;
+    Button[] bList;
+    String[] lrm;
+    int Count = 0;
+    int Count2 = 1;
+    AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        B1 = findViewById(R.id.b1);
+        B2 = findViewById(R.id.b2);
+        B3 = findViewById(R.id.b3);
+        Score = findViewById(R.id.score);
 
-        Log.v(TAG, "Finished Pre-Initialisation!");
-
-
+        Log.d("#d", "Finished Pre-Initialisation!");
     }
     @Override
     protected void onStart(){
         super.onStart();
+        bList = new Button[]{B1, B2, B3};
+        lrm = new String[]{"Button Left Clicked!","Button Middle Clicked!","Button Right Clicked!"};
+        Score.setText("0");
         setNewMole();
-        Log.v(TAG, "Starting GUI!");
+        Log.d("#d", "Starting GUI!");
+
+        for(int i=0; i<bList.length; i++){
+            final Button checkButton = bList[i];
+            final int I = i;
+            bList[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("#d",lrm[I]);
+                    if (doCheck(checkButton)){
+                        Count2 += 1;
+                        Score.setText("" + (Count+=1));
+                    }
+                    else {
+                        Count2 -= 1;
+                        Score.setText("" + (Count-=1));
+                    }
+                    setNewMole();
+                }
+            });
+        }
     }
     @Override
     protected void onPause(){
         super.onPause();
-        Log.v(TAG, "Paused Whack-A-Mole!");
+        Log.d("d", "Paused Whack-A-Mole!");
     }
 
     @Override
     protected void onStop(){
         super.onStop();
-        Log.v(TAG, "Stopped Whack-A-Mole!");
+        Log.d("#d", "Stopped Whack-A-Mole!");
         finish();
     }
 
-    private void doCheck(Button checkButton) {
-        /* Checks for hit or miss and if user qualify for advanced page.
-            Triggers nextLevelQuery().
-         */
+    private boolean doCheck(Button checkButton) {
+        boolean check;
+
+        if(checkButton.getText() == "*") {
+            check = true;
+        }
+        else{
+            check = false;
+        }
+        if(Count2==10){
+            nextLevelQuery();
+            Count2 = 0;
+        }
+        return check;
     }
 
     private void nextLevelQuery(){
-        /*
-        Builds dialog box here.
-        Log.v(TAG, "User accepts!");
-        Log.v(TAG, "User decline!");
-        Log.v(TAG, "Advance option given to user!");
-        belongs here*/
+        builder = new AlertDialog.Builder(this);
+        builder.setMessage("Would you like to advanced to advanced mode?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d("#d","User accepts!");
+                        nextLevel();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int i) {
+                        dialog.cancel();
+                        Log.d("#d","User decline!");
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.setTitle("Warning! Insane Whack-A-Mole incoming!");
+        alert.show();
+        Log.d("#d","Advance option given to user!");
     }
 
     private void nextLevel(){
-        /* Launch advanced page */
+        //Launch advanced page
+        Intent intent = new Intent(this, Main2Activity.class);
+        intent.putExtra("Count", Count);
+        startActivity(intent);
     }
 
     private void setNewMole() {
         Random ran = new Random();
         int randomLocation = ran.nextInt(3);
+        for(int i = 0; i<bList.length; i++){
+            if(randomLocation == i){
+                bList[i].setText("*");
+            }
+            else{
+                bList[i].setText("O");
+            }
+        }
     }
+
+
 }
